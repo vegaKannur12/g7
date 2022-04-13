@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:g7/controller/controller.dart';
 import 'package:g7/screen/base.dart';
-import 'package:page_transition/page_transition.dart';
+import 'package:g7/screen/product_details.dart';
 import 'package:provider/provider.dart';
-
 
 class ProductCategory extends StatefulWidget {
   String catName;
@@ -13,13 +12,51 @@ class ProductCategory extends StatefulWidget {
 }
 
 class _ProductCategoryState extends State<ProductCategory> {
+  Widget appBarTitle = Text("G7");
+  TextEditingController text = TextEditingController();
+
+  // bool isSearch = false;
+  Icon actionIcon = Icon(Icons.search);
   bool shouldPop = true;
   int? tappedIndex;
+  String searchKey = "";
+  bool visible = false;
+  List<Map<String, dynamic>>? newList = [];
+  void togle() {
+    setState(() {
+      visible = !visible;
+    });
+  }
 
   @override
   void deactivate() {
     Provider.of<Controller>(context, listen: false).clearsubCategory();
     super.deactivate();
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    newList = Provider.of<Controller>(context, listen: false).categoryList;
+  }
+
+  onChangedValue(String value) {
+    print("value inside function ---${value}");
+    setState(() {
+      searchKey = value;
+      if (value.isEmpty) {
+        Provider.of<Controller>(context, listen: false).setIssearch(false);
+      } else {
+        Provider.of<Controller>(context, listen: false).setIssearch(true);
+
+        newList = Provider.of<Controller>(context, listen: false)
+            .subcategoryList!
+            .where((cat) =>
+                cat["cat_name"].toUpperCase().startsWith(value.toUpperCase()))
+            .toList();
+      }
+    });
   }
 
   @override
@@ -33,7 +70,83 @@ class _ProductCategoryState extends State<ProductCategory> {
               onPressed: () {
                 Navigator.of(context).pop();
               }),
-          title: Text(widget.catName.toString()),
+          title: appBarTitle,
+          actions: [
+            IconButton(
+              icon: actionIcon,
+              onPressed: () {
+                togle();
+                setState(() {
+                  if (this.actionIcon.icon == Icons.search &&
+                      Provider.of<Controller>(context, listen: false)
+                              .isSearch ==
+                          false) {
+                    this.actionIcon = new Icon(Icons.close);
+                    this.appBarTitle = new TextField(
+                        controller: text,
+                        style: new TextStyle(
+                          color: Colors.white,
+                        ),
+                        decoration: new InputDecoration(
+                          prefixIcon:
+                              new Icon(Icons.search, color: Colors.white),
+                          hintText: "Search...",
+                          hintStyle: new TextStyle(color: Colors.white),
+                        ),
+                        onChanged: ((value) {
+                          print(value);
+                          onChangedValue(value);
+                        }),
+                        cursorColor: Colors.black);
+                  }
+                  // else if (this.actionIcon.icon == Icons.close &&
+                  //     newList!.length == 0) {
+                  //   isSearch = false;
+                  //   text.clear();
+                  // } else if (this.actionIcon.icon == Icons.close &&
+                  //     newList!.length > 0) {
+                  //   this.actionIcon = Icon(Icons.search);
+                  //   this.appBarTitle = appBarTitle;
+                  //   isSearch = false;
+                  //   text.clear();
+                  // }
+                  else if (this.actionIcon.icon == Icons.close) {
+                    this.actionIcon = Icon(Icons.search);
+                    this.appBarTitle = Text("G7");
+                    Provider.of<Controller>(context, listen: false)
+                        .setIssearch(false);
+
+                    text.clear();
+                  }
+                });
+              },
+            ),
+            Visibility(
+              visible: visible,
+              child: IconButton(
+                  onPressed: () {
+                    // setState(() {
+                    //   isSearch = true;
+                    // });
+                    Provider.of<Controller>(context, listen: false)
+                        .productDetails(text.text, "0", "0", context, "1");
+                    if (Provider.of<Controller>(context, listen: false)
+                            .isSearch ==
+                        true) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProductDetails(
+                              // itemName: Provider.of<Controller>(context, listen: false).productList![index]["cat_name"],
+                              // colorid: Provider.of<Controller>(context, listen: false).productList![index]["color_ids"],
+                              ),
+                        ),
+                      );
+                    }
+                  },
+                  icon: Icon(Icons.done)),
+            )
+          ],
         ),
         body: Container(
           height: double.infinity,
@@ -92,7 +205,8 @@ class _ProductCategoryState extends State<ProductCategory> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => Base(
-                                      batchname: value.subcategoryList![index]["cat_name"],
+                                      batchname: value.subcategoryList![index]
+                                          ["cat_name"],
                                     ),
                                   ),
                                 );

@@ -12,6 +12,7 @@ import 'package:http/http.dart' as http;
 
 class Controller extends ChangeNotifier {
   var cnprod = 0;
+  bool isSearch = false;
   String urlgolabl = Globaldata.apiglobal;
   // String urlgolabl = "http://trafiqerp.in/webapp/g7/api/";
   List<Map<String, dynamic>>? categoryList = [];
@@ -56,18 +57,20 @@ class Controller extends ChangeNotifier {
   }
 
   ////////////////////////////////////////
-  Future productDetails(String product_code, String batch_code,
-      String color_code, BuildContext context) async {
+  Future productDetails(String product_code, String? batch_code,
+      String? color_code, BuildContext context, String search) async {
     NetConnection.networkConnection(context).then((value) async {
       if (value == true) {
         try {
           Uri url = Uri.parse("$urlgolabl/product_detail.php");
+          
           print(
-              "body------------------${batch_code},${product_code},${color_code}");
+              "body------------------${batch_code},${product_code},${color_code},${search}");
           Map<String, dynamic> body = {
             "product_code": product_code,
             "batch_code": batch_code,
             "color_id": color_code,
+            "search":search
           };
           print("url-----------------${url}");
           isLoading = true;
@@ -87,6 +90,10 @@ class Controller extends ChangeNotifier {
           productInfoList = productDetails.productInfo;
           sizeList = productDetails.availableSize;
           colorList = productDetails.availableColors;
+          print("cat name-----${
+          productInfoList![0].cat_name
+
+          }");
           notifyListeners();
         } catch (e) {
           print(e);
@@ -172,5 +179,10 @@ class Controller extends ChangeNotifier {
   clearprodlist() {
     productList!.clear();
     // notifyListeners();
+  }
+
+  setIssearch(bool search) {
+    isSearch = search;
+    notifyListeners();
   }
 }

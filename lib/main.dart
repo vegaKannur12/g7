@@ -2,11 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:g7/screen/category.dart';
+import 'package:g7/screen/product_details.dart';
 import 'package:http/http.dart';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import 'controller/controller.dart';
 
 void main() {
@@ -42,7 +41,10 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp(  
+      routes: {
+        'productdetailspage': (BuildContext context) => ProductDetails(),
+      },
       theme: ThemeData(
         fontFamily: 'Raleway',
         primaryColor: Color.fromARGB(255, 236, 173, 178),

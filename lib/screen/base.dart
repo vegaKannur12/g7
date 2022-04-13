@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:g7/controller/controller.dart';
 import 'package:g7/myservice.dart';
 import 'package:g7/screen/product_details.dart';
+import 'package:g7/screen/search.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
-
 import 'package:transparent_image/transparent_image.dart';
 
 class Base extends StatefulWidget {
@@ -15,15 +16,58 @@ class Base extends StatefulWidget {
 }
 
 class _BaseState extends State<Base> {
-  // Globaldata globaldata=Globaldata();
+  TextEditingController _controller = TextEditingController();
+  Icon actionIcon = Icon(Icons.search);
+  Widget? appBarTitle;
+
+  int? tappedIndex;
+  List<Map<String, dynamic>>? newList = [];
+  var myDynamicAspectRatio = 1000 / 1;
+  late OverlayEntry sticky;
   int _currentIndex = 0;
   String imgGlobal = Globaldata.imageurl;
+  String searchKey = "";
+  bool visible = false;
   // String imgGlobal = "http://trafiqerp.in/webapp/g7/files/";
+  void togle() {
+    setState(() {
+      visible = !visible;
+    });
+  }
+
   @override
   void deactivate() {
+    Provider.of<Controller>(context, listen: false).clearprodlist();
     // TODO: implement deactivate
     super.deactivate();
-    Provider.of<Controller>(context, listen: false).clearprodlist();
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    appBarTitle = Text(widget.batchname);
+    newList = Provider.of<Controller>(context, listen: false).productList;
+  }
+
+  onChangedValue(String value) {
+    print("value inside function ---${value}");
+    setState(() {
+      searchKey = value;
+      if (value.isEmpty) {
+        Provider.of<Controller>(context, listen: false).setIssearch(false);
+        _controller.clear();
+      } else {
+        Provider.of<Controller>(context, listen: false).setIssearch(true);
+        // _controller.clear();
+        newList = Provider.of<Controller>(context, listen: false)
+            .productList!
+            .where((code) => code["product_code"]
+                .toUpperCase()
+                .startsWith(value.toUpperCase()))
+            .toList();
+      }
+    });
   }
 
   @override
@@ -32,14 +76,74 @@ class _BaseState extends State<Base> {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.white),
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () {
               Navigator.of(context).pop();
             }),
-        title: Text(
-            widget.batchname.toString(),
-            ),
+        title: appBarTitle,
+        actions: [
+          IconButton(
+            icon: actionIcon,
+            onPressed: () {
+              togle();
+              setState(() {
+                if (this.actionIcon.icon == Icons.search) {
+                  _controller.clear();
+                  this.actionIcon = Icon(Icons.close);
+                  this.appBarTitle = TextField(
+                      controller: _controller,
+                      style: new TextStyle(
+                        color: Colors.white,
+                      ),
+                      decoration: InputDecoration(
+                        prefixIcon: Icon(Icons.search, color: Colors.white),
+                        hintText: "Search...",
+                        hintStyle: TextStyle(color: Colors.white),
+                      ),
+                      onChanged: ((value) {
+                        // print(value);
+                        onChangedValue(value);
+                      }),
+                      cursorColor: Colors.black);
+                } else {
+                  if (this.actionIcon.icon == Icons.close) {
+                    this.actionIcon = Icon(Icons.search);
+                    this.appBarTitle = Text(widget.batchname);
+                    Provider.of<Controller>(context, listen: false)
+                        .setIssearch(false);
+                  }
+                }
+              });
+            },
+          ),
+          Visibility(
+            visible: visible,
+            child: IconButton(
+                onPressed: () {
+                  // setState(() {
+                  //   isSearch = true;
+                  // });
+                  Provider.of<Controller>(context, listen: false)
+                      .productDetails(_controller.text, "0", "0", context, "1");
+                  if (Provider.of<Controller>(context, listen: false)
+                          .isSearch ==
+                      true) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProductDetails(
+                            // itemName: Provider.of<Controller>(context, listen: false).productList![index]["cat_name"],
+                            // colorid: Provider.of<Controller>(context, listen: false).productList![index]["color_ids"],
+                            ),
+                      ),
+                    );
+                  }
+                },
+                icon: Icon(Icons.done)),
+          )
+        ],
       ),
       body: Consumer<Controller>(builder: (context, value, child) {
         if (value.isLoading == true) {
@@ -69,11 +173,13 @@ class _BaseState extends State<Base> {
             // );
           } else {
             return GridView.builder(
+              // itemCount: value.productList!.length,
               itemCount: value.productList!.length,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 crossAxisSpacing: 4,
                 mainAxisSpacing: 4,
+                // childAspectRatio:
                 childAspectRatio: .57,
               ),
               padding: EdgeInsets.all(8),
@@ -83,28 +189,23 @@ class _BaseState extends State<Base> {
                   // },
                   child: GestureDetector(
                     onTap: () {
+                      FocusScope.of(context).requestFocus(new FocusNode());
                       value.productDetails(
-                        value.productList![index]["product_code"],
-                        value.productList![index]["batch_code"],
-                        value.productList![index]["color_ids"],
-                        context,
-                      );
-                      // Navigator.push(
-                      //   context,
-                      //   PageTransition(
-                      //       type: PageTransitionType.rightToLeft,
-                      //       child: ProductDetails(),
-                      //       inheritTheme: true,
-                      //       ctx: context),
-                      // );
-                      // Future.delayed(Duration(milliseconds: 190), () {
+                          value.productList![index]["product_code"],
+                          value.productList![index]["batch_code"],
+                          value.productList![index]["color_ids"],
+                          context,
+                          "0");
+
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => ProductDetails(
-                            itemName: value.productList![index]["cat_name"],
-                            colorid: value.productList![index]["color_ids"],
-                          ),
+                              // itemName: value.productList![index]
+                              //     ["cat_name"],
+                              // colorid: value.productList![index]
+                              //     ["color_ids"],
+                              ),
                         ),
                       );
                       // });
@@ -119,32 +220,6 @@ class _BaseState extends State<Base> {
                       color: Colors.white70,
                       child: Stack(
                         children: [
-                          // Container(
-                          //   child: FadeInImage.memoryNetwork(
-                          //     fit: BoxFit.fill,
-                          //     image: imgGlobal +
-                          //         value.productList![index]["pi_files"],
-                          //     placeholder: kTransparentImage,
-                          //     imageErrorBuilder: (context, error, stacktrace) {
-                          //       return FadeInImage.memoryNetwork(
-                          //         fit: BoxFit.fill,
-                          //         placeholder: kTransparentImage,
-                          //         image: imgGlobal +
-                          //             value.productList![index]["pi_files"],
-                          //         imageErrorBuilder:
-                          //             (context, error, stacktrace) {
-                          //           return Center(
-                          //               child: Text('Image Not Available'));
-                          //         },
-                          //       );
-
-                          //     },
-                          //     //  (context, url) =>
-                          //     //     new CircularProgressIndicator(),
-                          //     // errorWidget: (context, url, error) =>
-                          //     //     new Icon(Icons.error),
-                          //   ),
-                          // ),
                           Container(
                             child: RichText(
                               textAlign: TextAlign.end,
@@ -156,34 +231,16 @@ class _BaseState extends State<Base> {
                             ),
                           ),
                           Container(
-                            height: size.height*0.4,
+                            height: size.height * 0.4,
                             child: FadeInImage(
                               fit: BoxFit.fill,
-                              placeholder: AssetImage(
-                                  "asset/ajax_loader.gif"),
+                              placeholder: AssetImage("asset/ajax_loader.gif"),
                               image: NetworkImage(
                                 imgGlobal +
                                     value.productList![index]["pi_files"],
-                                  
                               ),
-                            //  imageErrorBuilder:
-                            //           (context, error, stacktrace) {
-                            //         return Center(
-                            //             child: Text('Image Not Available'));
-                            //   },
                             ),
                           ),
-                          // Container(
-                          //   decoration: BoxDecoration(
-                          //     image: DecorationImage(
-                          //       image: NetworkImage(
-                          //         imgGlobal +
-                          //             value.productList![index]["pi_files"],
-                          //       ),
-                          //       fit: BoxFit.cover,
-                          //     ),
-                          //   ),
-                          // ),
                           Container(
                             decoration: BoxDecoration(
                               color: Colors.white,
