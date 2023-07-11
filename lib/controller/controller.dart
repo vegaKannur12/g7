@@ -63,14 +63,14 @@ class Controller extends ChangeNotifier {
       if (value == true) {
         try {
           Uri url = Uri.parse("$urlgolabl/product_detail.php");
-          
+
           print(
               "body------------------${batch_code},${product_code},${color_code},${search}");
           Map<String, dynamic> body = {
             "product_code": product_code,
             "batch_code": batch_code,
             "color_id": color_code,
-            "search":search
+            "search": search
           };
           print("url-----------------${url}");
           isLoading = true;
@@ -90,10 +90,7 @@ class Controller extends ChangeNotifier {
           productInfoList = productDetails.productInfo;
           sizeList = productDetails.availableSize;
           colorList = productDetails.availableColors;
-          print("cat name-----${
-          productInfoList![0].cat_name
-
-          }");
+          print("cat name-----${productInfoList![0].cat_name}");
           notifyListeners();
         } catch (e) {
           print(e);
@@ -112,6 +109,7 @@ class Controller extends ChangeNotifier {
 
   Future postsubCategory(String mc_id, BuildContext context) async {
     NetConnection.networkConnection(context).then((value) async {
+      print("mc_id--${mc_id}");
       if (value == true) {
         Uri url = Uri.parse("$urlgolabl/category_list.php");
         var json_body = {'mc_id': mc_id};
@@ -144,16 +142,17 @@ class Controller extends ChangeNotifier {
   ////////////////////////////////////////
   Future postProductList(String cat_id, BuildContext context) async {
     NetConnection.networkConnection(context).then((value) async {
+      print("cat_id---${cat_id}");
       if (value == true) {
         try {
           Uri url = Uri.parse("$urlgolabl/products_list.php");
-          var json_body = {'cat_id': cat_id};
+          // var json_body = {'cat_id': cat_id};
           isLoading = true;
           notifyListeners();
           http.Response response = await http.post(
             url,
             // headers: {'Content-type': 'application/json'},
-            body: json_body,
+            // body: json_body,
           );
           isLoading = false;
           //notifyListeners();

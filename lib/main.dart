@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:g7/screen/base.dart';
 import 'package:g7/screen/category.dart';
 import 'package:g7/screen/product_details.dart';
 import 'package:http/http.dart';
@@ -41,7 +42,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(  
+    return MaterialApp(
       routes: {
         'productdetailspage': (BuildContext context) => ProductDetails(),
       },
@@ -62,7 +63,7 @@ class _MyAppState extends State<MyApp> {
         //   ),
         // ),
       ),
-      home: Category(),
+      home: Base(batchname: ""),
       debugShowCheckedModeBanner: false,
     );
   }

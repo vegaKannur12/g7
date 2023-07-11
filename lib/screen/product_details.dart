@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:g7/controller/controller.dart';
 import 'package:g7/model/product_detail_model.dart';
 import 'package:g7/myservice.dart';
+import 'package:g7/screen/imageSize.dart';
 import 'package:provider/provider.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -15,6 +16,24 @@ class ProductDetails extends StatefulWidget {
 }
 
 class _ProductDetailsState extends State<ProductDetails> {
+  ImageResize imageResize = ImageResize();
+
+  int col = 1;
+  double paddingtop = 5;
+  double paddingbottom = 5;
+  double paddingleft = 5;
+  double paddingright = 5;
+  double imagewidth = 600;
+  double imageheight = 800;
+  double description1Height = 20;
+  double description2Height = 10;
+  List result = [];
+
+  double? imageActualWidth;
+  double? imageActualheight;
+  double? containerActualHieght;
+  double? cont_actual_h_prop;
+
   final scrollController = ScrollController();
   TextEditingController _controller = TextEditingController();
 
@@ -98,7 +117,25 @@ class _ProductDetailsState extends State<ProductDetails> {
   @override
   Widget build(BuildContext context) {
     // selected = widget.colorid;
-
+    double screenwidth = MediaQuery.of(context).size.width;
+    double screenheight = MediaQuery.of(context).size.height;
+    result = imageResize.imageResizeFun(
+        screenwidth,
+        screenheight,
+        description1Height,
+        description2Height,
+        paddingtop,
+        paddingbottom,
+        paddingright,
+        paddingleft,
+        imagewidth,
+        imageheight,
+        col);
+    containerActualHieght = result[0];
+    imageActualWidth = result[1];
+    imageActualheight = result[2];
+    cont_actual_h_prop = result[3];
+    print("nzdfn------$cont_actual_h_prop");
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
@@ -167,7 +204,6 @@ class _ProductDetailsState extends State<ProductDetails> {
                       .setIssearch(false);
                   // Navigator.pop(context);
                   // Navigator.popUntil(context, ModalRoute.withName("productdetailspage"));
-
                 } else {
                   if (this.actionIcon.icon == Icons.close) {
                     print("closed");
@@ -187,7 +223,6 @@ class _ProductDetailsState extends State<ProductDetails> {
                         .setIssearch(false);
                     // Navigator.pop(context);
                     // Navigator.popUntil(context, ModalRoute.withName("productdetailspage"));
-
                   }
                 }
               });
@@ -217,7 +252,7 @@ class _ProductDetailsState extends State<ProductDetails> {
             padding: const EdgeInsets.all(16.0),
             child: Consumer<Controller>(
               builder: (context, value, child) {
-                if (value.isLoading == true ) {
+                if (value.isLoading == true) {
                   return Center(
                     child: CircularProgressIndicator(),
                   );
@@ -259,32 +294,40 @@ class _ProductDetailsState extends State<ProductDetails> {
                                   width: size.width * 0.8,
                                   child: Image.asset("asset/no-img.png"))
                               : Flexible(
-                                flex: 7,
-                                fit: FlexFit.loose,
-                                child: CarouselSlider(
+                                  flex: 7,
+                                  fit: FlexFit.loose,
+                                  child: CarouselSlider(
                                     items: value.imageList!.map((image) {
                                       return Builder(
                                         builder: (BuildContext context) {
-                                          return Container(                              
+                                          return Container(
+                                            color: Colors.yellow,
+                                            height: containerActualHieght,
+                                            // width: cont,
+                                            // width: 800,
+                                            // height: 00,
                                             // width: MediaQuery.of(context).size.width,
-                                            width: size.width * 0.9,
-                                            // height: size.height * 0.9,
-                                            margin:
-                                                EdgeInsets.symmetric(horizontal: 0.0),
+                                            // width: size.width * 0.9,
+                                            // height: containerActualHieght,
+                                            margin: EdgeInsets.symmetric(
+                                                horizontal: 0.0),
                                             child: Image.network(
                                               imageurl + image.piFiles!,
                                               fit: BoxFit.fill,
-                                              //  height: 300,width: 600,
+                                              height: imageActualheight,
+                                              width: imageActualWidth,
                                             ),
                                           );
                                         },
                                       );
                                     }).toList(),
                                     options: CarouselOptions(
-                                        enlargeCenterPage: true,
+                                        viewportFraction: 1,
+
+                                        // enlargeCenterPage: false,
                                         autoPlayInterval: Duration(seconds: 2),
-                                        aspectRatio: 0.9,
-                                        // height: size.height * 0.5,
+                                        aspectRatio: cont_actual_h_prop!,
+                                        // height:containerActualHieght,
                                         autoPlay: isAutoPlayEnabled,
                                         onPageChanged: (index, reason) {
                                           setState(() {
@@ -292,7 +335,48 @@ class _ProductDetailsState extends State<ProductDetails> {
                                           });
                                         }),
                                   ),
-                              ),
+                                ),
+                          // value.imageList == null || value.imageList!.isEmpty
+                          //     ? Container(
+                          //         // height: size.height * 0.9,
+                          //         width: size.width * 0.8,
+                          //         child: Image.asset("asset/no-img.png"))
+                          //     : Flexible(
+                          //         flex: 7,
+                          //         fit: FlexFit.loose,
+                          //         child: CarouselSlider(
+                          //           items: value.imageList!.map((image) {
+                          //             return Builder(
+                          //               builder: (BuildContext context) {
+                          //                 return Container(
+                          //                   // width: MediaQuery.of(context).size.width,
+                          //                   // width: size.width * 0.9,
+                          //                   height: containerActualHieght,
+                          //                   margin: EdgeInsets.symmetric(
+                          //                       horizontal: 0.0),
+                          //                   child: Image.network(
+                          //                     imageurl + image.piFiles!,
+                          //                     // fit: BoxFit.fill,
+                          //                     height: imageActualheight,
+                          //                     width: imageActualWidth,
+                          //                   ),
+                          //                 );
+                          //               },
+                          //             );
+                          //           }).toList(),
+                          //           options: CarouselOptions(
+                          //               enlargeCenterPage: true,
+                          //               autoPlayInterval: Duration(seconds: 2),
+                          //               aspectRatio: cont_actual_h_prop!,
+                          //               height: containerActualHieght,
+                          //               autoPlay: isAutoPlayEnabled,
+                          //               onPageChanged: (index, reason) {
+                          //                 setState(() {
+                          //                   _current = index;
+                          //                 });
+                          //               }),
+                          //         ),
+                          //       ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: value.imageList!.map(
@@ -311,7 +395,8 @@ class _ProductDetailsState extends State<ProductDetails> {
                                         shape: BoxShape.circle,
                                         color: _current == indexcaro
                                             ? Color.fromRGBO(0, 0, 0, 0.4)
-                                            : Color.fromARGB(228, 211, 203, 203)),
+                                            : Color.fromARGB(
+                                                228, 211, 203, 203)),
                                   ),
                                 );
                               },
@@ -343,7 +428,8 @@ class _ProductDetailsState extends State<ProductDetails> {
                                 child: Text(
                                   "Color",
                                   style: TextStyle(
-                                      fontSize: 17, fontWeight: FontWeight.bold),
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.bold),
                                 ),
                               ),
                               Container(
@@ -379,10 +465,10 @@ class _ProductDetailsState extends State<ProductDetails> {
                                 child: Text(
                                   "Rate",
                                   style: TextStyle(
-                                      fontSize: 17, fontWeight: FontWeight.bold),
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.bold),
                                 ),
                               ),
-                              
                               Container(
                                 alignment: Alignment.center,
                                 width: size.width * 0.1,
@@ -487,13 +573,16 @@ class _ProductDetailsState extends State<ProductDetails> {
                                     return GestureDetector(
                                       onTap: () {
                                         setState(() {
-                                          selected =
-                                              value.colorList![indexlisview].colorId!;
+                                          selected = value
+                                              .colorList![indexlisview]
+                                              .colorId!;
                                           batch_code = value
-                                              .colorList![indexlisview].batchCode!;
+                                              .colorList![indexlisview]
+                                              .batchCode!;
                                           // _current = index;
                                           // _buttonCarouselController.animateToPage(_current);
-                                          isAutoPlayEnabled = !isAutoPlayEnabled;
+                                          isAutoPlayEnabled =
+                                              !isAutoPlayEnabled;
                                           // _buttonCarouselController.stopAutoPlay();
                                           print('I HAVE SELECTED $selected');
                                         });
@@ -523,7 +612,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                                                   //       value.colorList![indexlisview]
                                                   //           .piFiles!),
                                                   // ),
-                          
+
                                                   Flexible(
                                                     flex: 4,
                                                     fit: FlexFit.tight,
@@ -533,11 +622,12 @@ class _ProductDetailsState extends State<ProductDetails> {
                                                       decoration: BoxDecoration(
                                                         image: DecorationImage(
                                                           fit: BoxFit.cover,
-                                                          image: NetworkImage(imageurl +
-                                                              value
-                                                                  .colorList![
-                                                                      indexlisview]
-                                                                  .piFiles!),
+                                                          image: NetworkImage(
+                                                              imageurl +
+                                                                  value
+                                                                      .colorList![
+                                                                          indexlisview]
+                                                                      .piFiles!),
                                                         ),
                                                         shape: BoxShape.circle,
                                                         border: selected ==
@@ -546,10 +636,12 @@ class _ProductDetailsState extends State<ProductDetails> {
                                                                         indexlisview]
                                                                     .colorId!
                                                             ? Border.all(
-                                                                color: Colors.red,
+                                                                color:
+                                                                    Colors.red,
                                                                 width: 4)
                                                             : Border.all(
-                                                                color: Colors.grey),
+                                                                color: Colors
+                                                                    .grey),
                                                       ),
                                                     ),
                                                   ),
@@ -558,7 +650,8 @@ class _ProductDetailsState extends State<ProductDetails> {
                                                     fit: FlexFit.tight,
                                                     child: Container(
                                                       child: Text(value
-                                                          .colorList![indexlisview]
+                                                          .colorList![
+                                                              indexlisview]
                                                           .colorName
                                                           .toString()),
                                                     ),
@@ -579,9 +672,10 @@ class _ProductDetailsState extends State<ProductDetails> {
                                                       ),
                                                       child: Center(
                                                         child: RichText(
-                                                          textAlign: TextAlign.end,
-                                                          overflow:
-                                                              TextOverflow.ellipsis,
+                                                          textAlign:
+                                                              TextAlign.end,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
                                                           text: TextSpan(
                                                             text: "No image",
                                                             // value
@@ -589,7 +683,8 @@ class _ProductDetailsState extends State<ProductDetails> {
                                                             //     .colorName!
                                                             //     .toString(),
                                                             style: TextStyle(
-                                                                color: Colors.black),
+                                                                color: Colors
+                                                                    .black),
                                                           ),
                                                         ),
                                                       ),
@@ -600,7 +695,8 @@ class _ProductDetailsState extends State<ProductDetails> {
                                                     fit: FlexFit.tight,
                                                     child: Container(
                                                       child: Text(value
-                                                              .colorList![indexlisview]
+                                                              .colorList![
+                                                                  indexlisview]
                                                               .colorName
                                                               .toString()
                                                           // value.colorList![indexlisview]

@@ -98,7 +98,7 @@ class _CategoryState extends State<Category> {
                         .setIssearch(false);
                   }
                 }
-              });
+              },);
             },
           ),
           Visibility(

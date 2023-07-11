@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:g7/controller/controller.dart';
 import 'package:g7/myservice.dart';
+import 'package:g7/screen/imageSize.dart';
 import 'package:g7/screen/product_details.dart';
 import 'package:g7/screen/search.dart';
 import 'package:page_transition/page_transition.dart';
@@ -16,6 +17,24 @@ class Base extends StatefulWidget {
 }
 
 class _BaseState extends State<Base> {
+  ImageResize imageResize = ImageResize();
+
+  int col = 2;
+  double paddingtop = 5;
+  double paddingbottom = 5;
+  double paddingleft = 5;
+  double paddingright = 5;
+  double imagewidth = 600;
+  double imageheight = 800;
+  double description1Height = 20;
+  double description2Height = 10;
+  List result = [];
+
+  double? imageActualWidth;
+  double? imageActualheight;
+  double? containerActualHieght;
+  double? cont_actual_h_prop;
+
   TextEditingController _controller = TextEditingController();
   Icon actionIcon = Icon(Icons.search);
   Widget? appBarTitle;
@@ -47,6 +66,8 @@ class _BaseState extends State<Base> {
     // TODO: implement initState
     super.initState();
     appBarTitle = Text(widget.batchname);
+    Provider.of<Controller>(context, listen: false)
+        .postProductList("0", context);
     newList = Provider.of<Controller>(context, listen: false).productList;
   }
 
@@ -74,6 +95,25 @@ class _BaseState extends State<Base> {
   Widget build(BuildContext context) {
     int _selectedIndex = 0;
     Size size = MediaQuery.of(context).size;
+    double screenwidth = MediaQuery.of(context).size.width;
+    double screenheight = MediaQuery.of(context).size.height;
+    result = imageResize.imageResizeFun(
+        screenwidth,
+        screenheight,
+        description1Height,
+        description2Height,
+        paddingtop,
+        paddingbottom,
+        paddingright,
+        paddingleft,
+        imagewidth,
+        imageheight,
+        col);
+    containerActualHieght = result[0];
+    imageActualWidth = result[1];
+    imageActualheight = result[2];
+    cont_actual_h_prop = result[3];
+    print("kfdfjk------------------$cont_actual_h_prop");
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -177,10 +217,10 @@ class _BaseState extends State<Base> {
               itemCount: value.productList!.length,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                crossAxisSpacing: 4,
-                mainAxisSpacing: 4,
+                crossAxisSpacing: 0,
+                mainAxisSpacing: 0,
                 // childAspectRatio:
-                childAspectRatio: .57,
+                childAspectRatio: cont_actual_h_prop!,
               ),
               padding: EdgeInsets.all(8),
               itemBuilder: (BuildContext context, int index) {
@@ -231,8 +271,10 @@ class _BaseState extends State<Base> {
                             ),
                           ),
                           Container(
-                            height: size.height * 0.4,
+                            height: containerActualHieght,
                             child: FadeInImage(
+                              height: imageActualheight,
+                              width: imageActualWidth,
                               fit: BoxFit.fill,
                               placeholder: AssetImage("asset/ajax_loader.gif"),
                               image: NetworkImage(
